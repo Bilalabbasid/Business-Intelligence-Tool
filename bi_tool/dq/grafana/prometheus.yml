@@ -1,0 +1,47 @@
+# Prometheus configuration for DQ metrics
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "dq_alerts.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'django-dq'
+    static_configs:
+      - targets: ['bi-tool:8000']
+    metrics_path: '/api/v1/metrics/'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    honor_labels: true
+    
+  - job_name: 'celery-exporter'
+    static_configs:
+      - targets: ['celery-exporter:9540']
+    scrape_interval: 30s
+    
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    
+  - job_name: 'mongodb-exporter'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+    scrape_interval: 30s
+
+  - job_name: 'clickhouse-exporter'
+    static_configs:
+      - targets: ['clickhouse-exporter:9363']
+    scrape_interval: 30s

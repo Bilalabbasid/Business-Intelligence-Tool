@@ -1,0 +1,235 @@
+version: '1.0'
+metadata:
+  description: 'Sample Data Quality Rules for Sales Data'
+  owner: 'Data Engineering Team'
+  created_date: '2024-01-01'
+  
+rules:
+  # Row Count Checks
+  - name: sales_data_not_empty
+    description: 'Sales data should not be empty'
+    check_type: row_count
+    target_database: mongodb
+    target_collection: sales_data
+    threshold: 100
+    severity: CRITICAL
+    schedule: '0 */4 * * *'  # Every 4 hours
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+      - sales-ops@company.com
+    tags:
+      - sales
+      - critical
+      - volume
+    parameters:
+      comparison: gte
+    timeout_seconds: 300
+    sample_size: 1000
+    use_sampling: false
+  
+  - name: daily_sales_volume_check
+    description: 'Daily sales volume should be within expected range'
+    check_type: volume_anomaly
+    target_database: mongodb
+    target_collection: sales_data
+    threshold: 0.3  # 30% deviation
+    severity: WARN
+    schedule: '0 9 * * *'  # Daily at 9 AM
+    enabled: true
+    owners:
+      - sales-ops@company.com
+    tags:
+      - sales
+      - anomaly
+      - daily
+    parameters:
+      time_window: 24h
+      anomaly_method: statistical
+      lookback_days: 30
+    timeout_seconds: 600
+  
+  # Null Rate Checks
+  - name: sales_amount_not_null
+    description: 'Sales amount should not be null'
+    check_type: null_rate
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: total_amount
+    threshold: 0.01  # Max 1% null rate
+    severity: CRITICAL
+    schedule: '0 */2 * * *'  # Every 2 hours
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - data-quality
+      - critical
+    timeout_seconds: 300
+    sample_size: 10000
+    use_sampling: true
+  
+  - name: customer_id_not_null
+    description: 'Customer ID should not be null in sales records'
+    check_type: null_rate
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: customer_id
+    threshold: 0.005  # Max 0.5% null rate
+    severity: HIGH
+    schedule: '0 */2 * * *'
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - referential-integrity
+    timeout_seconds: 300
+  
+  # Range Checks
+  - name: sales_amount_positive
+    description: 'Sales amounts should be positive'
+    check_type: range_check
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: total_amount
+    threshold: 0.01  # Max 1% violations
+    severity: HIGH
+    schedule: '0 */4 * * *'
+    enabled: true
+    owners:
+      - finance@company.com
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - business-logic
+    parameters:
+      min_value: 0.01
+      max_value: 1000000
+    timeout_seconds: 300
+  
+  - name: discount_percentage_valid
+    description: 'Discount percentage should be between 0 and 100'
+    check_type: range_check
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: discount_percentage
+    threshold: 0.02  # Max 2% violations
+    severity: MEDIUM
+    schedule: '0 */6 * * *'
+    enabled: true
+    owners:
+      - sales-ops@company.com
+    tags:
+      - sales
+      - business-logic
+    parameters:
+      min_value: 0
+      max_value: 100
+    timeout_seconds: 300
+  
+  # Uniqueness Checks
+  - name: sales_transaction_id_unique
+    description: 'Sales transaction IDs should be unique'
+    check_type: uniqueness
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: transaction_id
+    threshold: 0  # No duplicates allowed
+    severity: CRITICAL
+    schedule: '0 */6 * * *'
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - data-integrity
+    timeout_seconds: 600
+  
+  # Cardinality Checks
+  - name: product_categories_cardinality
+    description: 'Product categories should have reasonable cardinality'
+    check_type: cardinality
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: product_category
+    threshold: 100  # Max 100 distinct categories
+    severity: WARN
+    schedule: '0 12 * * *'  # Daily at noon
+    enabled: true
+    owners:
+      - product-team@company.com
+    tags:
+      - sales
+      - product
+    parameters:
+      comparison: lte
+    timeout_seconds: 300
+  
+  # Referential Integrity
+  - name: customer_reference_integrity
+    description: 'Customer IDs should exist in customer table'
+    check_type: ref_integrity
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: customer_id
+    threshold: 0.02  # Max 2% invalid references
+    severity: HIGH
+    schedule: '0 */8 * * *'
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - referential-integrity
+    parameters:
+      ref_database: postgres
+      ref_table: customers
+      ref_column: customer_id
+    timeout_seconds: 900
+  
+  # Timeliness Checks
+  - name: sales_data_freshness
+    description: 'Sales data should be fresh (within last 2 hours)'
+    check_type: timeliness
+    target_database: mongodb
+    target_collection: sales_data
+    target_column: created_at
+    threshold: 7200  # 2 hours in seconds
+    severity: HIGH
+    schedule: '0 */1 * * *'  # Every hour
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+      - etl-team@company.com
+    tags:
+      - sales
+      - freshness
+      - sla
+    parameters:
+      time_format: iso8601
+      grace_period_seconds: 300
+    timeout_seconds: 180
+  
+  # Schema Drift Detection
+  - name: sales_schema_drift
+    description: 'Sales data schema should remain stable'
+    check_type: schema_drift
+    target_database: mongodb
+    target_collection: sales_data
+    threshold: 5  # Max 5 schema changes
+    severity: MEDIUM
+    schedule: '0 6 * * *'  # Daily at 6 AM
+    enabled: true
+    owners:
+      - data-eng-team@company.com
+    tags:
+      - sales
+      - schema
+      - stability
+    parameters:
+      compare_window: 7d
+      include_field_types: true
+      ignore_new_fields: false
+    timeout_seconds: 600

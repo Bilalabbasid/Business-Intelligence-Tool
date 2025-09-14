@@ -20,6 +20,12 @@ urlpatterns = [
     # Main API endpoints
     path('api/v1/', include('api.urls')),
     
+    # ETL endpoints
+    path('api/v1/etl/', include('etl.urls')),
+    
+    # Data Quality endpoints
+    path('api/v1/dq/', include('dq.urls')),
+    
     # API documentation (if needed later)
     # path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

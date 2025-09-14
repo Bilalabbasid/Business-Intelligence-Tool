@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator, EmailValidator
 from django.core.exceptions import ValidationError
-from djongo import models as djongo_models
 import uuid
 import json
 from decimal import Decimal
@@ -26,9 +25,9 @@ class BaseModel(models.Model):
         self.save(update_fields=['is_active', 'updated_at'])
 
 
-class Location(djongo_models.Model):
+class Location(models.Model):
     """
-    Embedded document for location information
+    Location information model (converted from embedded to separate model)
     """
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
@@ -37,9 +36,6 @@ class Location(djongo_models.Model):
     country = models.CharField(max_length=100)
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-    
-    class Meta:
-        abstract = True
     
     def __str__(self):
         return f"{self.address}, {self.city}, {self.country}"
@@ -55,8 +51,9 @@ class Branch(BaseModel):
         help_text='Unique branch identifier'
     )
     name = models.CharField(max_length=200)
-    location = djongo_models.EmbeddedField(
-        model_container=Location,
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.CASCADE,
         help_text='Branch location details'
     )
     manager = models.ForeignKey(
@@ -108,10 +105,16 @@ class Branch(BaseModel):
             })
 
 
-class SaleItem(djongo_models.Model):
+class SaleItem(BaseModel):
     """
-    Embedded document for individual sale items
+    Individual sale items model (converted from embedded to separate model)
     """
+    sale = models.ForeignKey(
+        'Sales',
+        on_delete=models.CASCADE,
+        related_name='sale_items',
+        help_text='The sale this item belongs to'
+    )
     item_name = models.CharField(max_length=200)
     category = models.CharField(max_length=100, blank=True)
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
@@ -133,7 +136,9 @@ class SaleItem(djongo_models.Model):
     )
     
     class Meta:
-        abstract = True
+        db_table = 'sale_items'
+        verbose_name = 'Sale Item'
+        verbose_name_plural = 'Sale Items'
     
     def clean(self):
         """Validate item data"""
@@ -156,6 +161,13 @@ class Sales(BaseModel):
         ('voucher', 'Voucher/Gift Card'),
     ]
     
+    ORDER_TYPES = [
+        ('dine_in', 'Dine In'),
+        ('takeaway', 'Takeaway'),
+        ('delivery', 'Delivery'),
+        ('online', 'Online Order'),
+    ]
+    
     sale_id = models.CharField(
         max_length=50, 
         unique=True,
@@ -167,10 +179,8 @@ class Sales(BaseModel):
         related_name='sales'
     )
     date = models.DateTimeField(default=timezone.now)
-    items = djongo_models.ArrayField(
-        model_container=SaleItem,
-        help_text='List of items in the sale'
-    )
+    # items are now accessed via reverse ForeignKey from SaleItem model
+    # items = models.ManyToManyField(SaleItem, related_name='sales')
     total_amount = models.DecimalField(
         max_digits=12, 
         decimal_places=2,
@@ -208,12 +218,7 @@ class Sales(BaseModel):
     )
     order_type = models.CharField(
         max_length=20,
-        choices=[
-            ('dine_in', 'Dine In'),
-            ('takeaway', 'Takeaway'),
-            ('delivery', 'Delivery'),
-            ('online', 'Online Order'),
-        ],
+        choices=ORDER_TYPES,
         default='dine_in'
     )
     

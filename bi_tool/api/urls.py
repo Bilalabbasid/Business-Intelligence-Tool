@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework.documentation import include_docs_urls
+# from rest_framework.documentation import include_docs_urls  # Will enable after resolving coreapi issues
 
 from .views import (
     BranchViewSet,
@@ -25,8 +25,8 @@ urlpatterns = [
     # API root
     path('', include(router.urls)),
     
-    # API Documentation (if needed)
-    path('docs/', include_docs_urls(title='BI Tool API')),
+    # API Documentation (will be enabled once coreapi is properly configured)
+    # path('docs/', include_docs_urls(title='BI Tool API')),
 ]
 
 # URL name patterns for reference:

@@ -1,0 +1,127 @@
+version: '1.0'
+metadata:
+  description: 'Data Quality Rules for Inventory Data'
+  owner: 'Inventory Management Team'
+  created_date: '2024-01-01'
+  
+rules:
+  # Inventory Stock Level Checks
+  - name: inventory_stock_not_negative
+    description: 'Inventory stock levels should not be negative'
+    check_type: range_check
+    target_database: postgres
+    target_collection: inventory
+    target_column: current_stock
+    threshold: 0.01  # Max 1% violations
+    severity: HIGH
+    schedule: '0 */3 * * *'  # Every 3 hours
+    enabled: true
+    owners:
+      - inventory-team@company.com
+      - warehouse@company.com
+    tags:
+      - inventory
+      - stock-levels
+      - business-logic
+    parameters:
+      min_value: 0
+    timeout_seconds: 300
+  
+  - name: inventory_reorder_point_valid
+    description: 'Reorder points should be reasonable'
+    check_type: range_check
+    target_database: postgres
+    target_collection: inventory
+    target_column: reorder_point
+    threshold: 0.05  # Max 5% violations
+    severity: MEDIUM
+    schedule: '0 */12 * * *'  # Twice daily
+    enabled: true
+    owners:
+      - inventory-team@company.com
+    tags:
+      - inventory
+      - reorder-management
+    parameters:
+      min_value: 1
+      max_value: 10000
+    timeout_seconds: 300
+  
+  # Product Information Completeness
+  - name: product_name_not_null
+    description: 'Product names should not be null'
+    check_type: null_rate
+    target_database: postgres
+    target_collection: inventory
+    target_column: product_name
+    threshold: 0  # No nulls allowed
+    severity: CRITICAL
+    schedule: '0 */6 * * *'
+    enabled: true
+    owners:
+      - product-team@company.com
+    tags:
+      - inventory
+      - product-data
+      - critical
+    timeout_seconds: 300
+  
+  - name: product_sku_unique
+    description: 'Product SKUs should be unique'
+    check_type: uniqueness
+    target_database: postgres
+    target_collection: inventory
+    target_column: sku
+    threshold: 0  # No duplicates allowed
+    severity: CRITICAL
+    schedule: '0 */8 * * *'
+    enabled: true
+    owners:
+      - product-team@company.com
+      - data-eng-team@company.com
+    tags:
+      - inventory
+      - product-data
+      - uniqueness
+    timeout_seconds: 600
+  
+  # Warehouse Location Validation
+  - name: warehouse_location_cardinality
+    description: 'Warehouse locations should have expected cardinality'
+    check_type: cardinality
+    target_database: postgres
+    target_collection: inventory
+    target_column: warehouse_location
+    threshold: 50  # Max 50 warehouse locations
+    severity: WARN
+    schedule: '0 18 * * *'  # Daily at 6 PM
+    enabled: true
+    owners:
+      - warehouse@company.com
+    tags:
+      - inventory
+      - warehouse
+    parameters:
+      comparison: lte
+    timeout_seconds: 300
+  
+  # Inventory Movement Tracking
+  - name: inventory_last_updated_freshness
+    description: 'Inventory records should be updated regularly'
+    check_type: timeliness
+    target_database: postgres
+    target_collection: inventory
+    target_column: last_updated
+    threshold: 86400  # 24 hours
+    severity: MEDIUM
+    schedule: '0 */4 * * *'
+    enabled: true
+    owners:
+      - inventory-team@company.com
+    tags:
+      - inventory
+      - freshness
+    parameters:
+      time_format: timestamp
+      grace_period_seconds: 3600  # 1 hour grace period
+    timeout_seconds: 300

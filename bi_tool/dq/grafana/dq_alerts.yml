@@ -1,0 +1,113 @@
+# DQ Alert Rules for Prometheus
+groups:
+  - name: data_quality_alerts
+    rules:
+      - alert: DQSystemDown
+        expr: up{job="django-dq"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: data-engineering
+        annotations:
+          summary: "DQ System is down"
+          description: "The Data Quality system has been down for more than 1 minute."
+          runbook_url: "https://internal-docs.company.com/runbooks/dq-system-down"
+          
+      - alert: HighViolationRate
+        expr: rate(dq_violations_count[5m]) > 10
+        for: 2m
+        labels:
+          severity: high
+          team: data-engineering
+        annotations:
+          summary: "High DQ violation rate detected"
+          description: "DQ violations are occurring at a rate of {{ $value }} per minute."
+          runbook_url: "https://internal-docs.company.com/runbooks/high-violation-rate"
+          
+      - alert: CriticalRuleFailure
+        expr: increase(dq_check_failures_total{severity="CRITICAL"}[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          team: data-engineering
+        annotations:
+          summary: "Critical DQ rule failure"
+          description: "Critical DQ rule {{ $labels.rule_name }} has failed for {{ $labels.database }}."
+          runbook_url: "https://internal-docs.company.com/runbooks/critical-rule-failure"
+          
+      - alert: DataFreshnessViolation
+        expr: max(dq_data_freshness_hours) > 6
+        for: 5m
+        labels:
+          severity: high
+          team: data-engineering
+        annotations:
+          summary: "Data freshness SLA violation"
+          description: "Data in {{ $labels.database }} is {{ $value }} hours old, exceeding SLA."
+          runbook_url: "https://internal-docs.company.com/runbooks/data-freshness-sla"
+          
+      - alert: DQCheckDurationHigh
+        expr: histogram_quantile(0.95, rate(dq_check_duration_bucket[5m])) > 300
+        for: 5m
+        labels:
+          severity: medium
+          team: data-engineering
+        annotations:
+          summary: "DQ check duration is high"
+          description: "95th percentile of DQ check duration is {{ $value }}s, which is above threshold."
+          runbook_url: "https://internal-docs.company.com/runbooks/high-check-duration"
+          
+      - alert: CeleryQueueBacklog
+        expr: sum(celery_queue_length{queue=~"dq.*"}) > 100
+        for: 3m
+        labels:
+          severity: medium
+          team: data-engineering
+        annotations:
+          summary: "DQ Celery queue backlog"
+          description: "DQ task queue has {{ $value }} pending tasks."
+          runbook_url: "https://internal-docs.company.com/runbooks/queue-backlog"
+          
+      - alert: AnomalyDetectionFailure
+        expr: increase(dq_anomaly_detection_failures_total[15m]) > 5
+        for: 5m
+        labels:
+          severity: medium
+          team: data-engineering
+        annotations:
+          summary: "Anomaly detection failures"
+          description: "Anomaly detection has failed {{ $value }} times in the last 15 minutes."
+          runbook_url: "https://internal-docs.company.com/runbooks/anomaly-detection-failure"
+          
+      - alert: LowDQSuccessRate
+        expr: rate(dq_checks_success_total[10m]) / rate(dq_checks_total[10m]) < 0.95
+        for: 5m
+        labels:
+          severity: high
+          team: data-engineering
+        annotations:
+          summary: "Low DQ check success rate"
+          description: "DQ check success rate is {{ $value | humanizePercentage }}, below 95% SLA."
+          runbook_url: "https://internal-docs.company.com/runbooks/low-success-rate"
+          
+      - alert: DatabaseConnectionFailure
+        expr: increase(dq_database_connection_failures_total[5m]) > 3
+        for: 1m
+        labels:
+          severity: high
+          team: data-engineering
+        annotations:
+          summary: "Database connection failures"
+          description: "DQ system unable to connect to {{ $labels.database }}."
+          runbook_url: "https://internal-docs.company.com/runbooks/db-connection-failure"
+          
+      - alert: AlertChannelFailure
+        expr: increase(dq_alert_delivery_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: medium
+          team: data-engineering
+        annotations:
+          summary: "Alert delivery failure"
+          description: "Failed to deliver alert via {{ $labels.channel }}."
+          runbook_url: "https://internal-docs.company.com/runbooks/alert-delivery-failure"

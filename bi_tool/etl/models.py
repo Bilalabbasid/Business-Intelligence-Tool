@@ -8,8 +8,6 @@ from typing import Dict, Any, Optional
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import JSONField
-from djongo import models as mongo_models
 
 
 class TimestampedModel(models.Model):
@@ -21,25 +19,25 @@ class TimestampedModel(models.Model):
         abstract = True
 
 
-# MongoDB Collections for Raw Data
-class RawEvent(mongo_models.Model):
+# Standard Django Models for Raw Data (moved from MongoDB to PostgreSQL)
+class RawEvent(TimestampedModel):
     """
-    Raw ingested events stored in MongoDB.
+    Raw ingested events stored in database.
     All incoming data goes here first before validation and processing.
     """
     # Unique identifier for deduplication
-    ingest_id = mongo_models.CharField(max_length=100, unique=True, db_index=True)
+    ingest_id = models.CharField(max_length=100, unique=True, db_index=True)
     
     # Source information
-    source = mongo_models.CharField(max_length=50, db_index=True)  # 'pos', 'csv_upload', 'api', 'stripe', etc.
-    batch_id = mongo_models.CharField(max_length=100, db_index=True)
-    branch_id = mongo_models.IntegerField(null=True, blank=True, db_index=True)
+    source = models.CharField(max_length=50, db_index=True)  # 'pos', 'csv_upload', 'api', 'stripe', etc.
+    batch_id = models.CharField(max_length=100, db_index=True)
+    branch_id = models.IntegerField(null=True, blank=True, db_index=True)
     
     # Raw payload
-    raw_payload = mongo_models.JSONField()
+    raw_payload = models.JSONField()
     
     # Processing metadata
-    validation_status = mongo_models.CharField(
+    validation_status = models.CharField(
         max_length=20, 
         choices=[
             ('pending', 'Pending Validation'),
@@ -50,69 +48,68 @@ class RawEvent(mongo_models.Model):
         default='pending',
         db_index=True
     )
-    validation_errors = mongo_models.JSONField(default=dict, blank=True)
+    validation_errors = models.JSONField(default=dict, blank=True)
     
     # Processing flags
-    processed = mongo_models.BooleanField(default=False, db_index=True)
-    processed_at = mongo_models.DateTimeField(null=True, blank=True, db_index=True)
-    etl_run_id = mongo_models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    processed = models.BooleanField(default=False, db_index=True)
+    processed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    etl_run_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     
     # Timestamps
-    received_at = mongo_models.DateTimeField(auto_now_add=True, db_index=True)
+    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
     
     # Enrichment data
-    enriched_data = mongo_models.JSONField(default=dict, blank=True)
+    enriched_data = models.JSONField(default=dict, blank=True)
     
     # Retry and error tracking
-    retry_count = mongo_models.IntegerField(default=0)
-    last_error = mongo_models.TextField(null=True, blank=True)
+    retry_count = models.IntegerField(default=0)
+    last_error = models.TextField(null=True, blank=True)
     
     class Meta:
-        collection = 'raw_events'
+        db_table = 'raw_events'
+        ordering = ['-received_at']
         indexes = [
-            [('source', 1), ('batch_id', 1)],
-            [('validation_status', 1), ('processed', 1)],
-            [('received_at', 1)],
-            [('branch_id', 1), ('received_at', 1)],
+            models.Index(fields=['source', 'batch_id']),
+            models.Index(fields=['validation_status', 'processed']),
+            models.Index(fields=['received_at']),
+            models.Index(fields=['branch_id', 'received_at']),
         ]
 
     def __str__(self):
         return f"{self.source}:{self.ingest_id} ({self.validation_status})"
 
 
-class RawError(mongo_models.Model):
+class RawError(TimestampedModel):
     """
     Invalid or failed raw events for audit and debugging.
     """
-    ingest_id = mongo_models.CharField(max_length=100, db_index=True)
-    source = mongo_models.CharField(max_length=50, db_index=True)
-    batch_id = mongo_models.CharField(max_length=100, db_index=True)
+    ingest_id = models.CharField(max_length=100, db_index=True)
+    source = models.CharField(max_length=50, db_index=True)
+    batch_id = models.CharField(max_length=100, db_index=True)
     
     # Original payload and error details
-    raw_payload = mongo_models.JSONField()
-    error_type = mongo_models.CharField(max_length=50, db_index=True)  # 'validation', 'schema', 'processing'
-    error_message = mongo_models.TextField()
-    error_details = mongo_models.JSONField(default=dict)
+    raw_payload = models.JSONField()
+    error_type = models.CharField(max_length=50, db_index=True)  # 'validation', 'schema', 'processing'
+    error_message = models.TextField()
+    error_details = models.JSONField(default=dict)
     
     # Metadata
-    failed_at = mongo_models.DateTimeField(auto_now_add=True, db_index=True)
-    resolved = mongo_models.BooleanField(default=False, db_index=True)
-    resolved_at = mongo_models.DateTimeField(null=True, blank=True)
-    resolution_notes = mongo_models.TextField(null=True, blank=True)
+    failed_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    resolved = models.BooleanField(default=False, db_index=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_notes = models.TextField(null=True, blank=True)
     
     class Meta:
-        collection = 'raw_errors'
+        db_table = 'raw_errors'
+        ordering = ['-failed_at']
         indexes = [
-            [('source', 1), ('error_type', 1)],
-            [('failed_at', 1)],
-            [('resolved', 1)],
+            models.Index(fields=['source', 'error_type']),
+            models.Index(fields=['failed_at']),
+            models.Index(fields=['resolved']),
         ]
 
     def __str__(self):
         return f"Error: {self.source}:{self.ingest_id} - {self.error_type}"
-
-
-# PostgreSQL Models for ETL Management
 class ETLJob(TimestampedModel):
     """
     Definition of ETL jobs and their configurations.
