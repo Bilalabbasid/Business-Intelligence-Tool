@@ -7,7 +7,549 @@ A comprehensive, enterprise-grade Business Intelligence platform built with Djan
 ![Django](https://img.shields.io/badge/django-4.2%2B-green.svg)
 ![React](https://img.shields.io/badge/react-18.0%2B-blue.svg)
 
-## 🚀 Features
+## � Complete Environment Setup Guide
+
+### 📋 Prerequisites Installation (Step-by-Step)
+
+#### Step 1: Install Python 3.10
+
+**Windows:**
+1. **Download Python**:
+   - Go to https://www.python.org/downloads/windows/
+   - Download Python 3.10.x (latest stable version)
+   - **CRITICAL**: Check "Add Python to PATH" during installation
+   - **CRITICAL**: Check "Install pip" during installation
+
+2. **Verify Installation**:
+   ```powershell
+   python --version
+   # Should output: Python 3.10.x
+   
+   pip --version
+   # Should output: pip 23.x.x
+   ```
+
+3. **If Python command not found**:
+   ```powershell
+   # Try these alternatives:
+   python3 --version
+   py --version
+   py -3.10 --version
+   ```
+
+**macOS:**
+```bash
+# Install using Homebrew (recommended)
+brew install python@3.10
+
+# Or download from python.org
+# https://www.python.org/downloads/macos/
+
+# Verify installation
+python3.10 --version
+pip3.10 --version
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install python3.10 python3.10-pip python3.10-venv python3.10-dev
+sudo apt install build-essential libssl-dev libffi-dev
+
+# Verify installation
+python3.10 --version
+pip3.10 --version
+```
+
+#### Step 2: Install Node.js 18+
+
+**Windows:**
+1. **Download Node.js**:
+   - Go to https://nodejs.org/
+   - Download LTS version (18.x or 20.x)
+   - Run installer with default settings
+   - **IMPORTANT**: Restart PowerShell after installation
+
+2. **Verify Installation**:
+   ```powershell
+   node --version
+   # Should output: v18.x.x or v20.x.x
+   
+   npm --version
+   # Should output: 9.x.x or 10.x.x
+   ```
+
+3. **Fix npm permission issues (if needed)**:
+   ```powershell
+   # If npm install fails with permission errors
+   npm config set prefix %APPDATA%\npm
+   ```
+
+**macOS:**
+```bash
+# Install using Homebrew
+brew install node@18
+
+# Or download from nodejs.org
+# Verify installation
+node --version
+npm --version
+```
+
+**Linux:**
+```bash
+# Using NodeSource repository (recommended)
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version
+npm --version
+```
+
+#### Step 3: Install Go 1.21+
+
+**Windows:**
+1. **Download Go**:
+   - Go to https://golang.org/dl/
+   - Download Windows installer (.msi file)
+   - Run installer with default settings
+   - **IMPORTANT**: Restart PowerShell after installation
+
+2. **Verify Installation**:
+   ```powershell
+   go version
+   # Should output: go version go1.21.x windows/amd64
+   ```
+
+3. **Set Go environment (if needed)**:
+   ```powershell
+   go env GOPATH
+   go env GOROOT
+   ```
+
+**macOS:**
+```bash
+# Install using Homebrew
+brew install go
+
+# Or download from golang.org
+# Verify installation
+go version
+```
+
+**Linux:**
+```bash
+# Download and install manually
+cd /tmp
+wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+
+# Add to PATH
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+source ~/.bashrc
+
+# Verify installation
+go version
+```
+
+#### Step 4: Install Docker Desktop
+
+**Windows:**
+1. **Check System Requirements**:
+   - Windows 10/11 64-bit
+   - WSL 2 feature enabled
+   - Virtualization enabled in BIOS
+
+2. **Enable WSL 2** (if not already enabled):
+   ```powershell
+   # Run as Administrator
+   wsl --install
+   # Restart computer when prompted
+   ```
+
+3. **Download and Install Docker**:
+   - Go to https://www.docker.com/products/docker-desktop/
+   - Download Docker Desktop for Windows
+   - Run installer and follow prompts
+   - **IMPORTANT**: Start Docker Desktop after installation
+
+4. **Verify Installation**:
+   ```powershell
+   docker --version
+   # Should output: Docker version 20.10.x or higher
+   
+   docker-compose --version
+   # Should output: Docker Compose version v2.x.x
+   ```
+
+5. **Fix Docker Issues** (if docker command fails):
+   ```powershell
+   # Start Docker Desktop manually
+   # Check if Docker Desktop is running in system tray
+   
+   # If still issues, try:
+   docker context ls
+   docker context use default
+   ```
+
+**macOS:**
+```bash
+# Download Docker Desktop from docker.com
+# Or install using Homebrew Cask
+brew install --cask docker
+
+# Start Docker Desktop from Applications folder
+# Verify installation
+docker --version
+docker-compose --version
+```
+
+**Linux:**
+```bash
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Verify installation
+docker --version
+docker-compose --version
+```
+
+### 🚀 Project Setup (Complete Guide)
+
+#### Step 1: Navigate to Project Directory
+
+```bash
+# Windows PowerShell
+cd "C:\Users\Bilal.Abbasi\Desktop\BI"
+
+# macOS/Linux
+cd ~/path/to/BI
+```
+
+#### Step 2: Verify Project Structure
+
+Your directory should contain:
+```
+BI/
+├── bi_tool/              # Django Backend
+├── bi-frontend/          # React Frontend
+├── backup-cli/           # Go backup utility
+├── logscan/             # Go log scanner
+├── docker-compose.yml   # Docker configuration
+├── .github/             # CI/CD workflows
+└── README.md           # This file
+```
+
+### 🐳 Docker Setup (Recommended - Easiest Way)
+
+#### Step 1: Start Docker Desktop
+- **Windows**: Look for Docker Desktop in system tray, click to start
+- **macOS**: Start Docker Desktop from Applications
+- **Linux**: `sudo systemctl start docker`
+
+#### Step 2: Verify Docker is Running
+```bash
+docker --version
+docker-compose --version
+docker info
+```
+
+#### Step 3: Build and Start All Services
+```bash
+# Navigate to project root
+cd "C:\Users\Bilal.Abbasi\Desktop\BI"
+
+# Start all services (this will take 5-15 minutes on first run)
+docker-compose up -d
+
+# Check status
+docker-compose ps
+```
+
+**Expected Output:**
+```
+Name                    Command               State                    Ports
+bi_postgres_1          docker-entrypoint.s ...   Up      0.0.0.0:5432->5432/tcp
+bi_mongodb_1           docker-entrypoint.s ...   Up      0.0.0.0:27017->27017/tcp
+bi_redis_1             docker-entrypoint.s ...   Up      0.0.0.0:6379->6379/tcp
+bi_backend_1           python manage.py ru ...   Up      0.0.0.0:8000->8000/tcp
+bi_frontend_1          npm run dev               Up      0.0.0.0:3000->3000/tcp
+```
+
+#### Step 4: Initialize Database and Create Admin User
+```bash
+# Run database migrations
+docker-compose exec backend python manage.py migrate
+
+# Create superuser account
+docker-compose exec backend python manage.py createsuperuser
+# Enter: username=admin, email=admin@company.com, password=admin123
+
+# Load sample data (optional)
+docker-compose exec backend python manage.py loaddata fixtures/sample_data.json
+```
+
+### 💻 Manual Setup (Development)
+
+#### Step 1: Backend Setup
+
+```bash
+# Navigate to backend directory
+cd bi_tool
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install Python dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Copy environment file
+copy .env.example .env  # Windows
+# cp .env.example .env  # macOS/Linux
+
+# Edit .env file with your settings (see configuration section below)
+```
+
+**Required .env Configuration:**
+```env
+DEBUG=True
+SECRET_KEY=your-secret-key-here-make-it-long-and-random
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database URLs
+DATABASE_URL=postgresql://postgres:password@localhost:5432/bi_warehouse
+MONGODB_URI=mongodb://localhost:27017/bi_raw_data
+REDIS_URL=redis://localhost:6379/0
+
+# JWT Settings
+JWT_SECRET_KEY=another-long-random-secret-key
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES=60
+JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
+```
+
+#### Step 2: Database Setup (Manual)
+
+**Install PostgreSQL:**
+```bash
+# Windows: Download from https://www.postgresql.org/download/windows/
+# macOS: brew install postgresql
+# Linux: sudo apt install postgresql postgresql-contrib
+
+# Start PostgreSQL service
+# Windows: Start via Services or pgAdmin
+# macOS: brew services start postgresql
+# Linux: sudo systemctl start postgresql
+```
+
+**Install MongoDB:**
+```bash
+# Windows: Download from https://www.mongodb.com/download-center/community
+# macOS: brew install mongodb-community
+# Linux: Follow official MongoDB installation guide
+
+# Start MongoDB service
+# Windows: Start via Services
+# macOS: brew services start mongodb-community
+# Linux: sudo systemctl start mongod
+```
+
+**Install Redis:**
+```bash
+# Windows: Download from https://github.com/microsoftarchive/redis/releases
+# macOS: brew install redis
+# Linux: sudo apt install redis-server
+
+# Start Redis service
+# Windows: Start via Services or run redis-server.exe
+# macOS: brew services start redis
+# Linux: sudo systemctl start redis
+```
+
+**Create Databases:**
+```sql
+-- Connect to PostgreSQL
+psql -U postgres
+
+-- Create database
+CREATE DATABASE bi_warehouse;
+CREATE USER bi_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE bi_warehouse TO bi_user;
+\q
+```
+
+#### Step 3: Run Backend Services
+
+```bash
+# In bi_tool directory with venv activated
+
+# Run database migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+
+# Start Celery worker (new terminal)
+celery -A bi_tool worker -l info
+
+# Start Celery beat (new terminal)
+celery -A bi_tool beat -l info
+
+# Start Django server
+python manage.py runserver 0.0.0.0:8000
+```
+
+#### Step 4: Frontend Setup
+
+```bash
+# Open new terminal and navigate to frontend
+cd bi-frontend
+
+# Install Node.js dependencies
+npm install
+
+# If npm install fails, try:
+npm install --legacy-peer-deps
+# or
+npm install --force
+
+# Fix specific package issues
+npm install @headlessui/react@latest
+npm install @heroicons/react@latest
+
+# Start development server
+npm run dev
+```
+
+#### Step 5: Go Tools Setup
+
+```bash
+# Setup backup-cli tool
+cd backup-cli
+go mod tidy
+go build -o backup-cli main.go
+
+# Test backup tool
+./backup-cli --help
+
+# Setup logscan tool
+cd ../logscan
+go mod tidy
+go build -o logscan main.go
+
+# Test logscan tool
+./logscan --help
+```
+
+### 🌐 Access Your Application
+
+After setup, access these URLs:
+
+- **🎯 Frontend Dashboard**: http://localhost:3000
+- **🔗 Backend API**: http://localhost:8000/api/
+- **⚙️ Admin Panel**: http://localhost:8000/admin/
+- **📚 API Documentation**: http://localhost:8000/api/docs/
+- **🌸 Celery Monitor**: http://localhost:5555 (if running Flower)
+
+### 🧪 Quick Test Run
+
+1. **Check Backend Health**:
+   ```bash
+   curl http://localhost:8000/api/health/
+   # Should return: {"status": "healthy", ...}
+   ```
+
+2. **Login to Admin Panel**:
+   - Go to http://localhost:8000/admin/
+   - Login with your superuser credentials
+
+3. **Access Frontend**:
+   - Go to http://localhost:3000
+   - Should see the BI Tool login page
+
+### 🚨 Common Issues & Fixes
+
+#### Docker Issues:
+```bash
+# If Docker won't start
+# 1. Restart Docker Desktop
+# 2. Check Windows features: Enable Hyper-V and WSL 2
+# 3. Run as administrator:
+docker-compose down
+docker system prune -a
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+#### Node.js Issues:
+```bash
+# If npm install fails
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+
+# If specific packages fail
+npm install @headlessui/react@^1.7.0 --save
+npm install @heroicons/react@^2.0.0 --save
+```
+
+#### Python Issues:
+```bash
+# If pip install fails
+python -m pip install --upgrade pip
+pip install --upgrade setuptools wheel
+
+# If virtual environment issues
+python -m venv --clear venv
+# Then reactivate and reinstall
+```
+
+#### Database Connection Issues:
+```bash
+# Check if services are running
+# Windows:
+netstat -an | findstr :5432  # PostgreSQL
+netstat -an | findstr :27017 # MongoDB
+netstat -an | findstr :6379  # Redis
+
+# macOS/Linux:
+lsof -i :5432  # PostgreSQL
+lsof -i :27017 # MongoDB
+lsof -i :6379  # Redis
+```
+
+### 👥 Default User Accounts
+
+After setup, you'll have these account types:
+
+1. **Super Admin** (created by you):
+   - Username: admin
+   - Email: admin@company.com
+   - Access: Everything
+
+2. **Sample Accounts** (if you loaded sample data):
+   - Manager: manager@company.com / password123
+   - Analyst: analyst@company.com / password123
+   - Staff: staff@company.com / password123
+
+## �🚀 Features
 
 ### 📈 **Analytics & Visualization**
 - **Interactive Dashboards** with role-based access (Super Admin, Branch Manager, Analyst, Staff)
