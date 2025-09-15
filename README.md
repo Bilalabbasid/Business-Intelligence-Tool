@@ -2,6 +2,37 @@
 
 A comprehensive, enterprise-grade Business Intelligence platform built with Django REST Framework and React, featuring advanced ETL capabilities, real-time analytics, and interactive dashboards.
 
+Developer Quick Run (local)
+---------------------------
+
+These minimal steps start the backend and frontend for local development and quick testing.
+
+1) Backend (in PowerShell):
+
+```powershell
+Set-Location 'C:\Users\Bilal.Abbasi\Desktop\BI\bi_tool'
+.\.venv\Scripts\Activate.ps1
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+2) Frontend (in a separate PowerShell window):
+
+```powershell
+Set-Location 'C:\Users\Bilal.Abbasi\Desktop\BI\bi-frontend'
+npm install
+npm run dev
+```
+
+3) Quick checks:
+
+```powershell
+Invoke-RestMethod -Uri 'http://localhost:8000/api/health/' -UseBasicParsing
+$body = @{ username='admin@example.com'; password='password' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://localhost:8000/api/auth/login/' -Body $body -ContentType 'application/json' -UseBasicParsing
+Invoke-RestMethod -Uri 'http://localhost:3004/api/health/' -UseBasicParsing
+```
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)
 ![Django](https://img.shields.io/badge/django-4.2%2B-green.svg)
