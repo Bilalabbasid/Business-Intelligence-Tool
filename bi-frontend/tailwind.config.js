@@ -8,6 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        /* Design token aliases used across the project */
+        background: '#ffffff',
+        foreground: '#0f172a',
+        ring: '#3b82f6',
+        border: '#e2e8f0',
+
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',

@@ -2,9 +2,12 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { STORAGE_KEYS, ERROR_MESSAGES } from '../utils/constants'
 
+// Base API URL: prefer explicit env var, otherwise use relative '/api' so Vite proxy works in dev
+const BASE_API = import.meta.env.VITE_API_BASE_URL || '/api'
+
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: BASE_API,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -82,7 +85,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/auth/refresh/`,
+            `${BASE_API.replace(/\/$/, '')}/auth/refresh/`,
             { refresh: refreshToken }
           )
           
@@ -184,4 +187,5 @@ export function buildPaginatedUrl(baseUrl, page, pageSize, filters = {}) {
 
 // Export api instance and token manager
 export { api, tokenManager }
+export const apiClient = api
 export default api
